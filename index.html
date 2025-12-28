@@ -82,19 +82,26 @@
 
     // MindAR безопаснее стартовать по клику (user gesture)
     startBtn.addEventListener('click', async () => {
-      try {
-        hint.innerHTML = "Запрашиваю камеру… если не спросит — проверь разрешения сайта.";
-        const mindarSystem = sceneEl.systems["mindar-image-system"];
-        await mindarSystem.start();
+  try {
+    hint.innerHTML = "Запрашиваю камеру…";
 
-        startBtn.style.display = 'none';
-        hint.innerHTML = "✅ Камера включена. Наведи на визитку (marker.jpg).";
-        setTimeout(()=>{ hint.style.display='none'; }, 3500);
-      } catch (e) {
-        console.error(e);
-        hint.innerHTML = "❌ Не удалось запустить AR. Открой консоль (F12) и пришли ошибку.";
-      }
+    await new Promise(resolve => {
+      if (sceneEl.hasLoaded) return resolve();
+      sceneEl.addEventListener("loaded", resolve, { once: true });
     });
+
+    const mindarSystem = sceneEl.systems["mindar-image-system"];
+    await mindarSystem.start();
+
+    startBtn.style.display = 'none';
+    hint.innerHTML = "✅ Камера включена. Наведи на визитку.";
+    setTimeout(()=>{ hint.style.display='none'; }, 3500);
+  } catch (e) {
+    console.error(e);
+    hint.innerHTML = "❌ Не удалось запустить AR. Пришли ошибку из консоли.";
+  }
+});
+
 
     // Чтобы корректно останавливалось при сворачивании вкладки
     document.addEventListener("visibilitychange", () => {
@@ -107,4 +114,5 @@
   </script>
 </body>
 </html>
+
 

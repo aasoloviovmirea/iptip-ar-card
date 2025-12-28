@@ -1,0 +1,12 @@
+BEGIN:VCARD
+VERSION:3.0
+N;CHARSET=UTF-8:Пушкин;Павел Юрьевич;;;
+FN;CHARSET=UTF-8:Пушкин Павел Юрьевич
+TITLE;CHARSET=UTF-8:Директор института, к.т.н., доцент
+ORG;CHARSET=UTF-8:РТУ МИРЭА;ИПТИП
+TEL;TYPE=WORK,VOICE:+74996008080
+NOTE;CHARSET=UTF-8:доб. 41772, 20760
+EMAIL;TYPE=INTERNET,WORK:pushkin@mirea.ru
+TEL;TYPE=CELL,VOICE:+79670971873
+ADR;CHARSET=UTF-8:;;ул. Стромынка, д.20, каб.319;Москва;;;
+END:VCARD

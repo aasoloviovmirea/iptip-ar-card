@@ -1,164 +1,69 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <title>IPTIP AR Card2</title>
+  <meta charset="utf-8" />
+  <title>IPTIP AR (Hiro)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
+  <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-<script>
-  // Фолбэк, если основной CDN не дал A-Frame
-  if (!window.AFRAME) {
-    const s = document.createElement('script');
-    s.src = "https://cdn.jsdelivr.net/npm/aframe@1.5.0/dist/aframe.min.js";
-    document.head.appendChild(s);
-  }
-</script>
+  <!-- AR.js (marker-based) -->
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
 
-<script>
-  // Загружаем MindAR только когда AFRAME уже есть
-  function loadMindAR() {
-    const s = document.createElement('script');
-    s.src = "https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js";
-    document.head.appendChild(s);
-  }
-
-  (function waitAFRAME(){
-    if (window.AFRAME) { loadMindAR(); return; }
-    setTimeout(waitAFRAME, 50);
-  })();
-</script>
-
+  <style>
+    html, body { margin:0; width:100%; height:100%; overflow:hidden; background:#000; }
+    .btn {
+      position: fixed; left: 50%; transform: translateX(-50%);
+      padding: 14px 18px; border-radius: 12px; font-size: 16px;
+      text-decoration: none; z-index: 9999; border: 0; cursor: pointer;
+      background:#111; color:#fff; bottom: 20px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.35);
+    }
+    #hint {
+      position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
+      padding: 10px 14px; border-radius: 12px; color:#fff;
+      background: rgba(0,0,0,.55); z-index: 9999; font-size: 14px;
+      text-align:center; max-width: 92vw;
+    }
+  </style>
 </head>
 
 <body>
-  <div id="hint">Нажми <b>«Запустить AR»</b> → разреши камеру → наведи на визитку.</div>
-
-  <button id="startBtn" class="btn">🎥 Запустить AR</button>
-  <a id="vcfBtn" href="pushkin.vcf" class="btn">📇 Добавить контакт</a>
+  <div id="hint">Наведи камеру на <b>маркер HIRO</b> (чёрный квадрат). Объект появится сразу.</div>
+  <a class="btn" href="./pushkin.vcf">📇 Добавить контакт</a>
 
   <a-scene
-    id="scene"
-    mindar-image="imageTargetSrc: ./marker.mind; uiScanning: yes; uiLoading: yes;"
-    color-space="sRGB"
-    renderer="colorManagement: true; physicallyCorrectLights: true"
+    embedded
+    arjs="sourceType: webcam; debugUIEnabled: false;"
     vr-mode-ui="enabled: false"
-    device-orientation-permission-ui="enabled: true"
-    embedded>
+    renderer="colorManagement: true;"
+  >
+    <!-- Камера AR.js -->
+    <a-entity camera></a-entity>
 
-    <a-assets>
-      <!-- OBJ подключаем через obj-model -->
-      <a-asset-item id="logoObj" src="./logo.obj"></a-asset-item>
-    </a-assets>
+    <!-- Маркер HIRO (очень стабильный) -->
+    <a-marker preset="hiro">
 
-    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+      <!-- “Логотип” (пока геометрия, чтобы точно увидеть) -->
+      <a-entity position="0 0.5 0">
+        <a-torus-knot radius="0.22" radius-tubular="0.05"
+          material="color:#00c8ff; metalness:0.3; roughness:0.2"
+          animation="property: rotation; to: 0 360 0; loop: true; dur: 2600">
+        </a-torus-knot>
 
-    <a-entity mindar-image-target="targetIndex: 0">
+        <!-- “лазер” -->
+        <a-cylinder position="0 0 -0.35" radius="0.01" height="0.7" rotation="90 0 0"
+          material="color:#00ffff; opacity:0.9; transparent:true">
+        </a-cylinder>
 
-  <!-- Небольшая “подложка”, чтобы было понятно, что сцена появилась -->
-  <a-plane position="0 0 -0.01" width="1.1" height="0.7"
-           material="color:#000; opacity:0.25; transparent:true"></a-plane>
+        <a-text value="ИПТИП • РТУ МИРЭА"
+          position="-0.7 -0.25 0"
+          width="2"
+          color="#ffffff">
+        </a-text>
+      </a-entity>
 
-  <!-- 3D-логотип -->
-  <a-entity id="logo"
-    obj-model="obj: #logoObj"
-    position="0 0.05 0"
-    rotation="0 0 0"
-    scale="0.01 0.01 0.01"
-    animation__pop="property: scale; from: 0.01 0.01 0.01; to: 0.35 0.35 0.35; dur: 700; easing: easeOutBack"
-    animation__spin="property: rotation; to: 0 360 0; loop: true; dur: 5000; easing: linear">
-  </a-entity>
-
-  <!-- “Призма” (простая геометрия) -->
-  <a-entity id="prism" position="0.22 0.02 0" rotation="0 25 0">
-    <a-box width="0.12" height="0.12" depth="0.12"
-           material="color:#ffffff; opacity:0.25; transparent:true"></a-box>
-    <a-box width="0.125" height="0.125" depth="0.125"
-           material="color:#00c8ff; opacity:0.18; transparent:true"></a-box>
-  </a-entity>
-
-  <!-- Лазерный луч (к призме) -->
-  <a-cylinder id="laserIn"
-    position="-0.25 0.05 0"
-    radius="0.008"
-    height="0.55"
-    rotation="0 0 90"
-    material="color:#00ffff; opacity:0; transparent:true; emissive:#00ffff; emissiveIntensity:1">
-    <a-animation attribute="material.opacity" from="0" to="0.9" dur="400" begin="0"></a-animation>
-    <a-animation attribute="material.opacity" from="0.9" to="0.2" dur="900" begin="400" direction="alternate" loop="true"></a-animation>
-  </a-cylinder>
-
-  <!-- Луч после призмы (распадается на цвета — имитация) -->
-  <a-entity id="laserOut" position="0.05 0.05 0">
-    <a-cylinder position="0.18 0.00 0.00" radius="0.006" height="0.38" rotation="0 0 90"
-      material="color:#ff3b30; opacity:0; transparent:true; emissive:#ff3b30; emissiveIntensity:1">
-      <a-animation attribute="material.opacity" from="0" to="0.8" dur="450" begin="250"></a-animation>
-    </a-cylinder>
-    <a-cylinder position="0.18 0.02 0.00" radius="0.006" height="0.38" rotation="0 0 90"
-      material="color:#34c759; opacity:0; transparent:true; emissive:#34c759; emissiveIntensity:1">
-      <a-animation attribute="material.opacity" from="0" to="0.8" dur="450" begin="350"></a-animation>
-    </a-cylinder>
-    <a-cylinder position="0.18 -0.02 0.00" radius="0.006" height="0.38" rotation="0 0 90"
-      material="color:#007aff; opacity:0; transparent:true; emissive:#007aff; emissiveIntensity:1">
-      <a-animation attribute="material.opacity" from="0" to="0.8" dur="450" begin="450"></a-animation>
-    </a-cylinder>
-  </a-entity>
-
-  <!-- Вспышка/частицы вокруг логотипа -->
-  <a-ring position="0 0.05 0.01" radius-inner="0.08" radius-outer="0.13"
-          material="color:#00c8ff; opacity:0; transparent:true"
-          animation__flash="property: material.opacity; from: 0; to: 0.9; dur: 180; delay: 650; dir: alternate; loop: true"></a-ring>
-
-  <!-- Подпись (HUD) -->
-  <a-text value="ИПТИП • РТУ МИРЭА"
-          position="-0.48 -0.22 0.02"
-          color="#ffffff"
-          width="1.6"
-          opacity="0.9"></a-text>
-
-</a-entity>
-
-
-  <script>
-    const startBtn = document.getElementById('startBtn');
-    const hint = document.getElementById('hint');
-    const sceneEl = document.getElementById('scene');
-
-    // MindAR безопаснее стартовать по клику (user gesture)
-    startBtn.addEventListener('click', async () => {
-  try {
-    hint.innerHTML = "Запрашиваю камеру…";
-
-    await new Promise(resolve => {
-      if (sceneEl.hasLoaded) return resolve();
-      sceneEl.addEventListener("loaded", resolve, { once: true });
-    });
-
-    const mindarSystem = sceneEl.systems["mindar-image-system"];
-    await mindarSystem.start();
-
-    startBtn.style.display = 'none';
-    hint.innerHTML = "✅ Камера включена. Наведи на визитку.";
-    setTimeout(()=>{ hint.style.display='none'; }, 3500);
-  } catch (e) {
-    console.error(e);
-    hint.innerHTML = "❌ Не удалось запустить AR. Пришли ошибку из консоли.";
-  }
-});
-
-
-    // Чтобы корректно останавливалось при сворачивании вкладки
-    document.addEventListener("visibilitychange", () => {
-      const mindarSystem = sceneEl.systems["mindar-image-system"];
-      if (!mindarSystem) return;
-      if (document.hidden) {
-        mindarSystem.stop();
-      }
-    });
-  </script>
+    </a-marker>
+  </a-scene>
 </body>
 </html>
-
-
-
-

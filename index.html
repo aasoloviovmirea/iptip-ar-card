@@ -1,118 +1,29 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>IPTIP AR Card3</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-
- <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-<script>
-  // Фолбэк, если основной CDN не дал A-Frame
-  if (!window.AFRAME) {
-    const s = document.createElement('script');
-    s.src = "https://cdn.jsdelivr.net/npm/aframe@1.5.0/dist/aframe.min.js";
-    document.head.appendChild(s);
-  }
-</script>
-
-<script>
-  // Загружаем MindAR только когда AFRAME уже есть
-  function loadMindAR() {
-    const s = document.createElement('script');
-    s.src = "https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js";
-    document.head.appendChild(s);
-  }
-
-  (function waitAFRAME(){
-    if (window.AFRAME) { loadMindAR(); return; }
-    setTimeout(waitAFRAME, 50);
-  })();
-</script>
-
+  <meta charset="UTF-8">
+  <title>AR.js A-Frame Hiro Marker Example</title>
+  <!-- Подключаем A-Frame (стабильная версия 1.6.0) -->
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <!-- Подключаем AR.js для A-Frame (стабильная сборка 3.4.7, поддерживает маркеры Hiro) -->
+  <script src="https://raw.githack.com/AR-js-org/AR.js/3.4.7/aframe/build/aframe-ar.js"></script>
 </head>
+<body style="margin: 0; overflow: hidden;">
+  <!-- A-Frame сцена с включенным AR.js; отключаем VR-интерфейс и отладочные элементы -->
+  <a-scene embedded vr-mode-ui="enabled: false"
+           arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;">
+    <!-- Маркер Hiro: при наведении камеры на соответствующий физический маркер,
+         внутренние объекты становятся видимыми -->
+    <a-marker preset="hiro">
+      <!-- 3D-куб красного цвета, поднят на 0.5 (чтобы находиться над маркером) 
+           и с анимацией вращения вокруг вертикальной оси -->
+      <a-box position="0 0.5 0" material="color: red;"
+             animation="property: rotation; to: 0 360 0; loop: true; dur: 5000;">
+      </a-box>
+    </a-marker>
 
-<body>
-  <div id="hint">Нажми <b>«Запустить AR»</b> → разреши камеру → наведи на визитку.</div>
-
-  <button id="startBtn" class="btn">🎥 Запустить AR</button>
-  <a id="vcfBtn" href="pushkin.vcf" class="btn">📇 Добавить контакт</a>
-
-  <a-scene
-    id="scene"
-    mindar-image="imageTargetSrc: ./marker.mind; uiScanning: yes; uiLoading: yes;"
-    color-space="sRGB"
-    renderer="colorManagement: true; physicallyCorrectLights: true"
-    vr-mode-ui="enabled: false"
-    device-orientation-permission-ui="enabled: true"
-    embedded>
-
-    <a-assets>
-      <!-- OBJ подключаем через obj-model -->
-      <a-asset-item id="logoObj" src="./logo.obj"></a-asset-item>
-    </a-assets>
-
-    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-
-    <a-entity mindar-image-target="targetIndex: 0">
-      <!-- 3D логотип -->
-      <a-entity
-        obj-model="obj: #logoObj"
-        position="0 0 0"
-        rotation="0 0 0"
-        scale="0.35 0.35 0.35"
-        animation="property: rotation; to: 0 360 0; loop: true; dur: 6000">
-      </a-entity>
-
-      <!-- “лазерный луч” -->
-      <a-cylinder
-        position="0 0.15 -0.45"
-        radius="0.01"
-        height="1.0"
-        rotation="90 0 0"
-        material="color: #00ffff; opacity: 0.9; transparent: true"
-        animation="property: material.opacity; from: 0; to: 0.9; dur: 800; dir: alternate; loop: true">
-      </a-cylinder>
-    </a-entity>
+    <!-- Камера A-Frame для отображения сцены от лица пользователя -->
+    <a-entity camera></a-entity>
   </a-scene>
-
-  <script>
-    const startBtn = document.getElementById('startBtn');
-    const hint = document.getElementById('hint');
-    const sceneEl = document.getElementById('scene');
-
-    // MindAR безопаснее стартовать по клику (user gesture)
-    startBtn.addEventListener('click', async () => {
-  try {
-    hint.innerHTML = "Запрашиваю камеру…";
-
-    await new Promise(resolve => {
-      if (sceneEl.hasLoaded) return resolve();
-      sceneEl.addEventListener("loaded", resolve, { once: true });
-    });
-
-    const mindarSystem = sceneEl.systems["mindar-image-system"];
-    await mindarSystem.start();
-
-    startBtn.style.display = 'none';
-    hint.innerHTML = "✅ Камера включена. Наведи на визитку.";
-    setTimeout(()=>{ hint.style.display='none'; }, 3500);
-  } catch (e) {
-    console.error(e);
-    hint.innerHTML = "❌ Не удалось запустить AR. Пришли ошибку из консоли.";
-  }
-});
-
-
-    // Чтобы корректно останавливалось при сворачивании вкладки
-    document.addEventListener("visibilitychange", () => {
-      const mindarSystem = sceneEl.systems["mindar-image-system"];
-      if (!mindarSystem) return;
-      if (document.hidden) {
-        mindarSystem.stop();
-      }
-    });
-  </script>
 </body>
 </html>
-
-

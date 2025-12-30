@@ -2,74 +2,57 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
-  <title>AR.js Hiro Test (IPTIP)5</title>
+  <title>AR.js HIRO — CLEAN FULLSCREEN6</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-  <!-- Совместимая связка: A-Frame 1.6.x + AR.js 3.4.x -->
+  <!-- ВАЖНО: пинованные версии (AR.js допускает подстановку тега версии вместо master) -->
   <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
   <script src="https://raw.githack.com/AR-js-org/AR.js/3.4.7/aframe/build/aframe-ar.js"></script>
 
   <style>
     html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
-    #hud {
-      position: fixed; z-index: 9999; left: 50%; transform: translateX(-50%);
-      top: 10px; padding: 10px 12px; border-radius: 12px;
-      font: 14px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      color: #fff; background: rgba(0,0,0,.55); text-align: center;
-      max-width: 92vw;
+
+    /* Ключ: жёстко прибиваем видео и canvas к экрану */
+    #arjs-video, .a-canvas {
+      position: fixed !important;
+      top: 0 !important; left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
     }
+    #arjs-video { object-fit: cover !important; } /* чтобы не “уезжало” вниз/вбок */
+    a-scene { position: fixed !important; inset: 0 !important; }
   </style>
 </head>
 
 <body>
-  <div id="hud">Статус: <b id="st">SCANNING…</b><br>Наведи на <b>маркер HIRO</b> (чёрный квадрат)</div>
-
   <a-scene
     embedded
-    vr-mode-ui="enabled:false"
+    vr-mode-ui="enabled: false"
+    renderer="antialias: true; alpha: true;"
     background="transparent: true"
-    renderer="alpha: true; antialias: true; precision: mediump;"
     arjs="
       sourceType: webcam;
       debugUIEnabled: false;
 
-      /* ФИКС 1: видео как текстура в WebGL — часто лечит черный экран */
-      videoTexture: true;
-
-      /* ФИКС 2: ограничиваем разрешение камеры (у тебя было 6144×4608) */
+      /* Ключ: режем поток камеры (лечит случаи с 4K/6K, чёрным экраном и глюками) */
       sourceWidth: 1280;
       sourceHeight: 720;
       displayWidth: 1280;
       displayHeight: 720;
+
+      /* На телефоне обычно лучше задняя камера */
+      facingMode: environment;
     "
   >
-    <a-marker id="hiro" preset="hiro" emitevents="true">
-      <!-- максимально заметный объект -->
-      <a-box position="0 0.5 0"
-             material="shader: flat; color: #00c8ff"
-             animation="property: rotation; to: 0 360 0; loop: true; dur: 1800">
+    <a-marker preset="hiro">
+      <a-box
+        position="0 0.5 0"
+        material="shader: flat; color: #00c8ff"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 1800">
       </a-box>
-
-      <a-text value="IPTIP • OK"
-              position="-0.7 0 0"
-              width="2"
-              color="#ffffff">
-      </a-text>
     </a-marker>
 
     <a-entity camera></a-entity>
   </a-scene>
-
-  <script>
-    const st = document.getElementById('st');
-    const marker = document.getElementById('hiro');
-
-    marker.addEventListener('markerFound', () => {
-      st.innerHTML = '<span style="color:#7CFF7C">FOUND ✅</span>';
-    });
-    marker.addEventListener('markerLost', () => {
-      st.innerHTML = '<span style="color:#FFD36A">LOST ⚠️</span>';
-    });
-  </script>
 </body>
 </html>

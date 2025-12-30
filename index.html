@@ -2,29 +2,33 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>IPTIP AR Card<2/title>
+  <title>IPTIP AR Card3</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-  <script src="https://cdn.jsdelivr.net/npm/aframe@1.5.0/dist/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+ <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+<script>
+  // Фолбэк, если основной CDN не дал A-Frame
+  if (!window.AFRAME) {
+    const s = document.createElement('script');
+    s.src = "https://cdn.jsdelivr.net/npm/aframe@1.5.0/dist/aframe.min.js";
+    document.head.appendChild(s);
+  }
+</script>
 
-  <style>
-    html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; background:#000; }
-    .btn {
-      position: fixed; left: 50%; transform: translateX(-50%);
-      padding: 14px 18px; border-radius: 12px; font-size: 16px;
-      text-decoration: none; z-index: 9999; border: 0; cursor: pointer;
-      box-shadow: 0 8px 24px rgba(0,0,0,.35);
-    }
-    #startBtn { bottom: 76px; background:#00c8ff; color:#001018; font-weight:700; }
-    #vcfBtn   { bottom: 20px; background:#111; color:#fff; }
-    #hint {
-      position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
-      padding: 10px 14px; border-radius: 12px; color:#fff;
-      background: rgba(0,0,0,.55); z-index: 9999; font-size: 14px;
-      text-align:center; max-width: 92vw;
-    }
-  </style>
+<script>
+  // Загружаем MindAR только когда AFRAME уже есть
+  function loadMindAR() {
+    const s = document.createElement('script');
+    s.src = "https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js";
+    document.head.appendChild(s);
+  }
+
+  (function waitAFRAME(){
+    if (window.AFRAME) { loadMindAR(); return; }
+    setTimeout(waitAFRAME, 50);
+  })();
+</script>
+
 </head>
 
 <body>
@@ -78,19 +82,26 @@
 
     // MindAR безопаснее стартовать по клику (user gesture)
     startBtn.addEventListener('click', async () => {
-      try {
-        hint.innerHTML = "Запрашиваю камеру… если не спросит — проверь разрешения сайта.";
-        const mindarSystem = sceneEl.systems["mindar-image-system"];
-        await mindarSystem.start();
+  try {
+    hint.innerHTML = "Запрашиваю камеру…";
 
-        startBtn.style.display = 'none';
-        hint.innerHTML = "✅ Камера включена. Наведи на визитку (marker.jpg).";
-        setTimeout(()=>{ hint.style.display='none'; }, 3500);
-      } catch (e) {
-        console.error(e);
-        hint.innerHTML = "❌ Не удалось запустить AR. Открой консоль (F12) и пришли ошибку.";
-      }
+    await new Promise(resolve => {
+      if (sceneEl.hasLoaded) return resolve();
+      sceneEl.addEventListener("loaded", resolve, { once: true });
     });
+
+    const mindarSystem = sceneEl.systems["mindar-image-system"];
+    await mindarSystem.start();
+
+    startBtn.style.display = 'none';
+    hint.innerHTML = "✅ Камера включена. Наведи на визитку.";
+    setTimeout(()=>{ hint.style.display='none'; }, 3500);
+  } catch (e) {
+    console.error(e);
+    hint.innerHTML = "❌ Не удалось запустить AR. Пришли ошибку из консоли.";
+  }
+});
+
 
     // Чтобы корректно останавливалось при сворачивании вкладки
     document.addEventListener("visibilitychange", () => {
@@ -103,4 +114,5 @@
   </script>
 </body>
 </html>
+
 

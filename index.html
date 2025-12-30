@@ -15,15 +15,17 @@
     <!-- Маркер Hiro: при наведении камеры на соответствующий физический маркер,
          внутренние объекты становятся видимыми -->
     <a-marker preset="hiro">
-      <!-- 3D-куб красного цвета, поднят на 0.5 (чтобы находиться над маркером) 
-           и с анимацией вращения вокруг вертикальной оси -->
-      <a-box position="0 0.5 0" material="color: red;"
-             animation="property: rotation; to: 0 360 0; loop: true; dur: 5000;">
-      </a-box>
-    </a-marker>
+  <a-box
+    position="0 0.25 0"
+    scale="0.25 0.25 0.25"
+    material="shader: flat; color: #00c8ff">
+  </a-box>
+</a-marker>
+
 
     <!-- Камера A-Frame для отображения сцены от лица пользователя -->
     <a-entity camera></a-entity>
   </a-scene>
 </body>
 </html>
+

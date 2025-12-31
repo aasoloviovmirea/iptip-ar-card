@@ -14,13 +14,20 @@
            arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;">
     <!-- Маркер Hiro: при наведении камеры на соответствующий физический маркер,
          внутренние объекты становятся видимыми -->
-    <a-marker preset="hiro">
-  <a-box
-    position="0 0.25 0"
-    scale="0.25 0.25 0.25"
-    material="shader: flat; color: #00c8ff">
-  </a-box>
-</a-marker>
+    <a-asset-item id="fox" src="Fox.glb"></a-asset-item>
+     <a-marker preset="hiro">
+      <!-- Модель -->
+      <a-entity
+        gltf-model="#fox"
+        position="0 0 0"
+        rotation="0 180 0"
+        scale="0.05 0.05 0.05"
+        animation-mixer="loop: repeat;"
+      ></a-entity>
+
+      <!-- “подложка” чтобы было понятно где маркер -->
+      <a-plane rotation="-90 0 0" width="1" height="1" material="shader: flat; color: #111; opacity: 0.35; transparent: true"></a-plane>
+    </a-marker>
 
 
     <!-- Камера A-Frame для отображения сцены от лица пользователя -->
@@ -28,5 +35,6 @@
   </a-scene>
 </body>
 </html>
+
 
 

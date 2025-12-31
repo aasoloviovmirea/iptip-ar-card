@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NE MindAR</title>
+    <title>NE1 MindAR</title>
     <!-- Подключаем A-Frame 1.6.0 и MindAR 1.2.5 (image tracking) -->
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
@@ -28,9 +28,9 @@
       <!-- Целевой образ MindAR (index 0 соответствует первому изображению в .mind) -->
       <a-entity id="mindar-target" mindar-image-target="targetIndex: 0">
         <!-- Вариант 1: плоскость для отображения видео -->
-        <a-plane src="#foxVideo" position="0 0 0" rotation="0 0 0" width="1" height="0.75"></a-plane>
+        <!-- <a-plane src="#foxVideo" position="0 0 0" rotation="0 0 0" width="1" height="0.75"></a-plane> -->
         <!-- Вариант 2: 3D-модель лисы на изображении (с анимацией) -->
-        <!-- <a-entity gltf-model="#foxModel3D" scale="0.5 0.5 0.5" position="0 0 0.1" rotation="0 0 0" animation-mixer></a-entity> -->
+         <a-entity gltf-model="#foxModel3D" scale="0.5 0.5 0.5" position="0 0 0.1" rotation="0 0 0" animation-mixer></a-entity> 
       </a-entity>
     </a-scene>
 
@@ -53,3 +53,4 @@
     </script>
   </body>
 </html>
+

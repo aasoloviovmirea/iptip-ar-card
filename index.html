@@ -1,56 +1,42 @@
 <!DOCTYPE html>
 <html lang="ru">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NE1 MindAR</title>
-    <!-- Подключаем A-Frame 1.6.0 и MindAR 1.2.5 (image tracking) -->
-    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-  </head>
-  <body style="margin: 0; overflow: hidden;">
-    <!-- Сцена MindAR с трекингом по изображению -->
-    <a-scene mindar-image="imageTargetSrc: market.mind; autoStart: true;" 
-             color-space="sRGB" embedded
-             renderer="colorManagement: true, physicallyCorrectLights" 
-             vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
-      <!-- Заранее загружаемые ресурсы: видео и/или 3D-модель -->
-      <a-assets>
-        <!-- Видео для оверлея (muted для автостарта на мобильных) -->
-        <video id="foxVideo" src="path/to/fox-video.mp4" preload="auto" playsinline loop muted></video>
-        <!-- 3D-модель (если используется вместо видео) -->
-        <a-asset-item id="foxModel3D" src="path/to/FoxAnimated.glb"></a-asset-item>
-      </a-assets>
+<head>
+  <meta charset="UTF-8">
+  <title>MindAR Image Tracking Scene</title>
+  <!-- A-Frame library -->
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <!-- MindAR for A-Frame (image tracking) -->
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+</head>
+<body style="margin: 0; overflow: hidden;">
+  <a-scene mindar-image="imageTargetSrc: https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.mind;" 
+           color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" 
+           vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
 
-      <!-- Статичная камера (MindAR сам управляет камерой виртуально) -->
-      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+    <!-- Assets: video for playback -->
+    <a-assets>
+      <video id="promoVideo" src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" loop="true" muted playsinline></video>
+    </a-assets>
 
-      <!-- Целевой образ MindAR (index 0 соответствует первому изображению в .mind) -->
-      <a-entity id="mindar-target" mindar-image-target="targetIndex: 0">
-        <!-- Вариант 1: плоскость для отображения видео -->
-        <!-- <a-plane src="#foxVideo" position="0 0 0" rotation="0 0 0" width="1" height="0.75"></a-plane> -->
-        <!-- Вариант 2: 3D-модель лисы на изображении (с анимацией) -->
-         <a-entity gltf-model="#foxModel3D" scale="0.5 0.5 0.5" position="0 0 0.1" rotation="0 0 0" animation-mixer></a-entity> 
-      </a-entity>
-    </a-scene>
+    <!-- AR camera (no auto orientation) -->
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-    <!-- Скрипт: управление воспроизведением и сохранение контента при потере цели -->
-    <script>
-      const sceneEl = document.querySelector('a-scene');
-      const videoEl = document.querySelector('#foxVideo');
-      sceneEl.addEventListener('targetFound', () => {
-        // Начинаем воспроизведение видео или анимации модели при обнаружении изображения
-        if (videoEl) {
-          videoEl.play();
-        }
-      });
-      sceneEl.addEventListener('targetLost', () => {
-        // Оставляем контент видимым после потери изображения-мишени
-        const targetEntity = document.querySelector('#mindar-target');
-        targetEntity.setAttribute('visible', 'true');
-        // (Опционально: не ставим видео на паузу, чтобы оно продолжило проигрываться)
-      });
-    </script>
-  </body>
+    <!-- Image target (index 0) with video plane -->
+    <a-entity mindar-image-target="targetIndex: 0">
+      <a-plane src="#promoVideo" position="0 0 0" rotation="0 0 0" width="1" height="0.5625"></a-plane>
+    </a-entity>
+  </a-scene>
+
+  <!-- Script to play video on target found and keep it on screen after target lost -->
+  <script>
+    const target = document.querySelector('a-entity[mindar-image-target]');
+    const videoEl = document.querySelector('#promoVideo');
+    target.addEventListener('targetFound', () => {
+      videoEl.play();
+    });
+    target.addEventListener('targetLost', () => {
+      target.object3D.visible = true;
+    });
+  </script>
+</body>
 </html>
-

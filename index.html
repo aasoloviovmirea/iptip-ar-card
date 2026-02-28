@@ -62,7 +62,6 @@
 
     let mindarSystem = null;
 
-    // ✅ Ждём, пока сцена A-Frame реально инициализируется
     sceneEl.addEventListener('loaded', () => {
       mindarSystem = sceneEl.systems["mindar-image-system"];
       btn.disabled = false;
@@ -72,21 +71,18 @@
     btn.addEventListener('click', async () => {
       try {
         if (!mindarSystem) throw new Error("MindAR system not ready yet");
-
-        await mindarSystem.start(); // запускаем камеру
-        await videoEl.play();       // стартуем видео (разрешено, т.к. это клик пользователя)
+        await mindarSystem.start();
+        await videoEl.play();
         btn.style.display = 'none';
       } catch (e) {
         alert("Не удалось запустить AR/видео: " + e);
       }
     });
 
-    // когда target найден — видео должно играть
     targetEl.addEventListener('targetFound', () => {
       if (videoEl.paused) videoEl.play().catch(()=>{});
     });
 
-    // когда target потерян — пауза (можешь убрать, если хочешь продолжение)
     targetEl.addEventListener('targetLost', () => {
       videoEl.pause();
       videoEl.currentTime = 0;

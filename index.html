@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>11MindAR Video Test</title>
+  <title>MindAR Video Test</title>
 
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
@@ -19,7 +19,7 @@
 </head>
 
 <body>
-  <button id="startBtn">▶️ Запустить AR + видео</button>
+  <button id="startBtn" disabled>⏳ Загрузка…</button>
 
   <a-scene
     id="scene"
@@ -56,15 +56,25 @@
 
   <script>
     const sceneEl = document.getElementById('scene');
-    const mindarSystem = sceneEl.systems["mindar-image-system"];
     const videoEl = document.getElementById('promoVideo');
     const btn = document.getElementById('startBtn');
+    const targetEl = document.getElementById('t0');
 
-    // по нажатию: запускаем камеру MindAR + запускаем видео
+    let mindarSystem = null;
+
+    // ✅ Ждём, пока сцена A-Frame реально инициализируется
+    sceneEl.addEventListener('loaded', () => {
+      mindarSystem = sceneEl.systems["mindar-image-system"];
+      btn.disabled = false;
+      btn.textContent = "▶️ Запустить AR + видео";
+    });
+
     btn.addEventListener('click', async () => {
       try {
-        await mindarSystem.start();
-        await videoEl.play();
+        if (!mindarSystem) throw new Error("MindAR system not ready yet");
+
+        await mindarSystem.start(); // запускаем камеру
+        await videoEl.play();       // стартуем видео (разрешено, т.к. это клик пользователя)
         btn.style.display = 'none';
       } catch (e) {
         alert("Не удалось запустить AR/видео: " + e);
@@ -72,14 +82,14 @@
     });
 
     // когда target найден — видео должно играть
-    document.getElementById('t0').addEventListener('targetFound', () => {
+    targetEl.addEventListener('targetFound', () => {
       if (videoEl.paused) videoEl.play().catch(()=>{});
     });
 
-    // когда target потерян — ставим на паузу (можно убрать, если хочешь чтобы продолжало)
-    document.getElementById('t0').addEventListener('targetLost', () => {
+    // когда target потерян — пауза (можешь убрать, если хочешь продолжение)
+    targetEl.addEventListener('targetLost', () => {
       videoEl.pause();
-      videoEl.currentTime = 0; // убрать, если хочешь продолжать с того же места
+      videoEl.currentTime = 0;
     });
   </script>
 </body>

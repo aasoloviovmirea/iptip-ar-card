@@ -1,91 +1,69 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>MindAR Video Test</title>
-
+  <meta charset="UTF-8">
+  <title>1MindAR Image Video</title>
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-
   <style>
-    html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; background:#000; }
-    #startBtn{
-      position:fixed; z-index:9999; left:50%; top:14px; transform:translateX(-50%);
-      padding:12px 14px; border-radius:12px; border:0; background:#111; color:#fff;
-      font:16px system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    html, body { margin:0; overflow:hidden; }
+    #startButton {
+      position: fixed;
+      z-index: 999;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 20px;
+      background: #222;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
     }
   </style>
 </head>
-
 <body>
-  <button id="startBtn" disabled>⏳ Загрузка…</button>
+  <!-- Кнопка запуска видео -->
+  <button id="startButton">▶️ Запустить видео</button>
 
-  <a-scene
-    id="scene"
-    mindar-image="imageTargetSrc: https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.mind; autoStart: false; uiScanning: yes; uiLoading: yes;"
-    vr-mode-ui="enabled: false"
-    device-orientation-permission-ui="enabled: false"
-    renderer="colorManagement: true, physicallyCorrectLights"
-    embedded
-  >
+  <a-scene mindar-image="imageTargetSrc: https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.mind;" 
+           color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights"
+           vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+
     <a-assets>
       <video id="promoVideo"
-        preload="auto"
-        loop
-        muted
-        playsinline
-        webkit-playsinline
-        crossorigin="anonymous">
-        <source src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" type="video/mp4">
+             src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+             loop muted playsinline crossorigin="anonymous">
       </video>
     </a-assets>
 
-    <a-camera position="0 0 0" look-controls="enabled:false"></a-camera>
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-    <a-entity id="t0" mindar-image-target="targetIndex: 0">
-      <a-plane
-        position="0 0 0"
-        rotation="0 0 0"
-        width="1"
-        height="0.5625"
-        material="shader: flat; src: #promoVideo;">
+    <a-entity mindar-image-target="targetIndex: 0">
+      <a-plane src="#promoVideo" position="0 0 0" rotation="0 0 0"
+               width="1" height="0.5625">
       </a-plane>
     </a-entity>
   </a-scene>
 
   <script>
-    const sceneEl = document.getElementById('scene');
-    const videoEl = document.getElementById('promoVideo');
-    const btn = document.getElementById('startBtn');
-    const targetEl = document.getElementById('t0');
+    const videoEl = document.querySelector('#promoVideo');
+    const target = document.querySelector('[mindar-image-target]');
+    const button = document.querySelector('#startButton');
 
-    let mindarSystem = null;
-
-    sceneEl.addEventListener('loaded', () => {
-      mindarSystem = sceneEl.systems["mindar-image-system"];
-      btn.disabled = false;
-      btn.textContent = "▶️ Запустить AR + видео";
-    });
-
-    btn.addEventListener('click', async () => {
+    button.addEventListener('click', async () => {
       try {
-        if (!mindarSystem) throw new Error("MindAR system not ready yet");
-        await mindarSystem.start();
         await videoEl.play();
-        btn.style.display = 'none';
-      } catch (e) {
-        alert("Не удалось запустить AR/видео: " + e);
+        button.style.display = 'none';
+      } catch (err) {
+        alert("Не удалось запустить видео: " + err);
       }
     });
 
-    targetEl.addEventListener('targetFound', () => {
-      if (videoEl.paused) videoEl.play().catch(()=>{});
-    });
-
-    targetEl.addEventListener('targetLost', () => {
-      videoEl.pause();
-      videoEl.currentTime = 0;
+    target.addEventListener('targetFound', () => {
+      if (videoEl.paused) {
+        videoEl.play();
+      }
     });
   </script>
 </body>

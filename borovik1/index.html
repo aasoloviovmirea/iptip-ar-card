@@ -3,48 +3,42 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>2222MindAR — Borovik1</title>
+  <title>0000MindAR — Borovik1</title>
 
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
   <style>
     html, body { margin:0; width:100%; height:100%; overflow:hidden; background:#000; }
-    #unlockBtn{
-      position: fixed; z-index: 9999;
-      top: 14px; left: 50%; transform: translateX(-50%);
-      padding: 12px 16px; border: 0; border-radius: 10px;
-      background: #111; color: #fff; font: 16px system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      opacity: 0.92;
+    #startAR{
+      position:fixed; z-index:9999; left:50%; top:14px; transform:translateX(-50%);
+      padding:12px 16px; border:0; border-radius:10px;
+      background:#111; color:#fff; font:16px system-ui,-apple-system,Segoe UI,Roboto,Arial;
     }
-    #hint{
-      position: fixed; z-index: 9999;
-      bottom: 14px; left: 50%; transform: translateX(-50%);
-      padding: 10px 14px; border-radius: 10px;
-      background: rgba(0,0,0,0.55); color: #fff;
-      font: 14px system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    #msg{
+      position:fixed; z-index:9999; left:50%; bottom:14px; transform:translateX(-50%);
+      padding:10px 14px; border-radius:10px;
+      background:rgba(0,0,0,.55); color:#fff; font:14px system-ui,-apple-system,Segoe UI,Roboto,Arial;
       display:none;
     }
   </style>
 </head>
 
 <body>
-  <button id="unlockBtn">▶️ Включить видео</button>
-  <div id="hint">Наведи камеру на изображение</div>
+  <button id="startAR">▶️ Запустить сканирование</button>
+  <div id="msg">Наведи камеру на изображение</div>
 
-  <!-- ВАЖНО: autoStart НЕ трогаем (по умолчанию камера стартует сама) -->
-  <!-- Это как в официальном basic-примере MindAR :contentReference[oaicite:2]{index=2} -->
   <a-scene
-    mindar-image="imageTargetSrc: ./borovik1g.mind; uiScanning: yes; uiLoading: yes;"
-    color-space="sRGB"
-    renderer="colorManagement: true, physicallyCorrectLights"
-    vr-mode-ui="enabled: false"
-    device-orientation-permission-ui="enabled: false"
+    id="scene"
     embedded
+    mindar-image="imageTargetSrc: ./borovik1g.mind; uiScanning: yes; uiLoading: yes; autoStart: false;"
+    vr-mode-ui="enabled:false"
+    device-orientation-permission-ui="enabled:false"
+    renderer="colorManagement: true, physicallyCorrectLights"
+    color-space="sRGB"
   >
     <a-assets>
-      <!-- muted + playsinline = максимальная совместимость для play() -->
-      <video id="promoVideo"
+      <video id="video"
         preload="auto"
         loop
         muted
@@ -57,60 +51,73 @@
 
     <a-camera position="0 0 0" look-controls="enabled:false"></a-camera>
 
-    <!-- СКРЫТО пока таргет не найден -->
-    <a-entity id="t0" mindar-image-target="targetIndex: 0" visible="false">
+    <!-- Контент СКРЫТ, пока target не найден -->
+    <a-entity id="target" mindar-image-target="targetIndex: 0" visible="false">
       <a-plane
         width="1"
         height="0.5625"
-        material="shader: flat; src: #promoVideo"
         position="0 0 0"
-        rotation="0 0 0">
+        rotation="0 0 0"
+        material="shader: flat; src: #video">
       </a-plane>
     </a-entity>
   </a-scene>
 
   <script>
-    const videoEl = document.getElementById('promoVideo');
-    const targetEl = document.getElementById('t0');
-    const btn = document.getElementById('unlockBtn');
-    const hint = document.getElementById('hint');
+    const sceneEl  = document.querySelector('#scene');
+    const startBtn = document.querySelector('#startAR');
+    const msg      = document.querySelector('#msg');
+    const videoEl  = document.querySelector('#video');
+    const targetEl = document.querySelector('#target');
 
-    let videoUnlocked = false;
+    let arSystem = null;
+    let unlocked = false;
 
-    // 1) “Разлочиваем” видео кликом (нужно для части устройств/политик автоплея)
-    btn.addEventListener('click', async () => {
+    // Получаем arSystem строго после загрузки сцены (как в доках MindAR)
+    sceneEl.addEventListener('loaded', () => {
+      arSystem = sceneEl.systems['mindar-image-system'];
+    });
+
+    // Диагностика старта камеры
+    sceneEl.addEventListener('arReady', () => console.log('MindAR: arReady'));
+    sceneEl.addEventListener('arError', (e) => {
+      console.error('MindAR: arError', e);
+      alert('Камера не запустилась. Проверь: разрешение камеры, HTTPS, не встроенный браузер (Telegram/VK), и что .mind/.mp4 реально открываются по прямой ссылке.');
+    });
+
+    // Старт AR + "unlock" видео одним пользовательским кликом
+    startBtn.addEventListener('click', async () => {
       try {
-        await videoEl.play();   // старт
-        videoEl.pause();        // сразу стоп — просто unlock
+        if (!arSystem) throw new Error('arSystem ещё не готов (подожди секунду и нажми снова)');
+
+        // 1) стартуем камеру/трекер
+        arSystem.start(); // MindAR API :contentReference[oaicite:3]{index=3}
+
+        // 2) разлочим видео жестом (play->pause)
+        await videoEl.play();
+        videoEl.pause();
         videoEl.currentTime = 0;
-        videoUnlocked = true;
-        btn.style.display = 'none';
-        hint.style.display = 'block';
-      } catch (e) {
-        alert('Не удалось включить видео: ' + e);
+        unlocked = true;
+
+        startBtn.style.display = 'none';
+        msg.style.display = 'block';
+      } catch (err) {
+        alert('Ошибка запуска AR/видео: ' + err);
       }
     });
 
-    // 2) Показ/скрытие только по факту трекинга
+    // Трекинг: нашли — показать и играть
     targetEl.addEventListener('targetFound', async () => {
       targetEl.setAttribute('visible', 'true');
-      if (videoUnlocked) {
-        try { await videoEl.play(); } catch(e) {}
+      if (unlocked) {
+        try { await videoEl.play(); } catch(e) { console.log('play blocked', e); }
       }
     });
 
+    // Потеряли — скрыть и пауза
     targetEl.addEventListener('targetLost', () => {
       videoEl.pause();
       targetEl.setAttribute('visible', 'false');
-    });
-
-    // 3) Если камера не запустилась, обычно вы увидите “обычный рендер” без камеры
-    // Эти события есть у MindAR (arReady / arError встречаются в примерах/доках) :contentReference[oaicite:3]{index=3}
-    const scene = document.querySelector('a-scene');
-    scene.addEventListener('arReady', () => console.log('MindAR: arReady'));
-    scene.addEventListener('arError', (e) => {
-      console.error('MindAR: arError', e);
-      alert('Камера не запустилась. Проверь разрешение камеры и открой по HTTPS.');
     });
   </script>
 </body>

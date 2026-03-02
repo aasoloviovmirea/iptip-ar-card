@@ -1,111 +1,72 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>11111MindAR — Borovik1 (stable)</title>
-
+  <meta charset="UTF-8">
+  <title>0MindAR Image Video</title>
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-
   <style>
-    html, body { margin:0; width:100%; height:100%; overflow:hidden; background:#000; }
-    a-scene { position: fixed; inset: 0; }
-    #startAR {
-      position: fixed; z-index: 9999;
-      top: 14px; left: 50%; transform: translateX(-50%);
-      padding: 12px 16px; border: 0; border-radius: 10px;
-      background: rgba(0,0,0,0.75); color:#fff;
-      font: 16px system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    html, body { margin:0; overflow:hidden; }
+    #startButton {
+      position: fixed;
+      z-index: 999;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 20px;
+      background: #222;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
     }
   </style>
 </head>
-
 <body>
-  <button id="startAR">▶️ Запустить камеру</button>
+  <!-- Кнопка запуска видео -->
+  <button id="startButton">▶️ Запустить видео</button>
 
-  <a-scene
-    id="scene"
-    mindar-image="imageTargetSrc: ./borovik1g.mind; autoStart: false; uiScanning: yes; uiLoading: yes;"
-    color-space="sRGB"
-    renderer="colorManagement: true, physicallyCorrectLights"
-    vr-mode-ui="enabled: false"
-    device-orientation-permission-ui="enabled: false"
-    embedded
-  >
+  <a-scene mindar-image="imageTargetSrc: https://aasoloviovmirea.github.io/iptip-ar-card/borovik1g.mind;" 
+           color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights"
+           vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+
     <a-assets>
-      <!-- ВАЖНО: src прямо на video, иначе A-Frame иногда ругается и не считает ассет -->
-      <video
-        id="promoVideo"
-        src="./borovik1.mp4"
-        preload="auto"
-        loop
-        muted
-        playsinline
-        webkit-playsinline
-        crossorigin="anonymous">
+      <video id="promoVideo"
+             src="https://aasoloviovmirea.github.io/iptip-ar-card/borovik2.mp4"
+             loop muted playsinline crossorigin="anonymous">
       </video>
     </a-assets>
 
-    <a-camera position="0 0 0" look-controls="enabled:false"></a-camera>
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-    <!-- Контент скрыт, пока таргет не найден -->
-    <a-entity id="target0" mindar-image-target="targetIndex: 0" visible="false">
-      <a-plane
-        width="1"
-        height="0.5625"
-        material="shader: flat; src: #promoVideo"
-        position="0 0 0"
-        rotation="0 0 0">
+    <a-entity mindar-image-target="targetIndex: 0">
+      <a-plane src="#promoVideo" position="0 0 0" rotation="0 0 0"
+               width="1" height="0.5625">
       </a-plane>
     </a-entity>
   </a-scene>
 
   <script>
-    const sceneEl  = document.querySelector('#scene');
-    const startBtn = document.querySelector('#startAR');
-    const videoEl  = document.querySelector('#promoVideo');
-    const targetEl = document.querySelector('#target0');
+    const videoEl = document.querySelector('#promoVideo');
+    const target = document.querySelector('[mindar-image-target]');
+    const button = document.querySelector('#startButton');
 
-    let arSystem = null;
-
-    // По документации arSystem берём после loaded. :contentReference[oaicite:1]{index=1}
-    sceneEl.addEventListener('loaded', () => {
-      arSystem = sceneEl.systems['mindar-image-system'];
-    });
-
-    sceneEl.addEventListener('arReady', () => console.log('MindAR: arReady'));
-    sceneEl.addEventListener('arError', (e) => {
-      console.error('MindAR: arError', e);
-      alert('MindAR не смог запустить камеру. Проверь разрешение камеры и HTTPS.');
-    });
-
-    // Старт камеры (и “разлочка” видео одним жестом)
-    startBtn.addEventListener('click', async () => {
+    button.addEventListener('click', async () => {
       try {
-        arSystem.start(); // старт движка :contentReference[oaicite:2]{index=2}
-
-        // разлочка видео (на некоторых устройствах нужно user gesture)
         await videoEl.play();
-        videoEl.pause();
-        videoEl.currentTime = 0;
-
-        startBtn.style.display = 'none';
+        button.style.display = 'none';
       } catch (err) {
-        console.error(err);
-        alert('Ошибка запуска: ' + err);
+        alert("Не удалось запустить видео: " + err);
       }
     });
 
-    targetEl.addEventListener('targetFound', async () => {
-      targetEl.setAttribute('visible', 'true');
-      try { await videoEl.play(); } catch(e) {}
-    });
-
-    targetEl.addEventListener('targetLost', () => {
-      videoEl.pause();
-      targetEl.setAttribute('visible', 'false');
+    target.addEventListener('targetFound', () => {
+      if (videoEl.paused) {
+        videoEl.play();
+      }
     });
   </script>
 </body>
 </html>
+
+
